@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Maps Route</title>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD37fXpzeUh7VVmIhEg8a4FhGJRQjVbaP4"></script>
+  <style>
+    #loading {
+      text-align: center;
+      margin-top: 20%;
+      font-size: 1.5em;
+    }
+    #map {
+      height: 100vh;
+      width: 100%;
+      display: none;
+    }
+  </style>
+  <script>
+    function showMap() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('map').style.display = 'block';
+    }
+
+    function initMap() {
+      try {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 12,
+          center: { lat: ##MAPGPSLAT##, lng: ##MAPGPSLON## }
+        });
+
+        var directionsService = new google.maps.DirectionsService();
+        var waypointLocations = ##WAYPOINTLOCATIONS##;
+
+        function calculateAndDisplayRoute(origin, destination, map) {
+          var directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true });
+          directionsRenderer.setMap(map);
+          
+          directionsService.route(
+            {
+              origin: origin,
+              destination: destination,
+              travelMode: 'DRIVING'
+            },
+            function(response, status) {
+              if (status === 'OK') {
+                directionsRenderer.setDirections(response);
+              } else {
+                console.error('Directions request failed: ', status);
+                window.alert('Directions request failed due to ' + status);
+              }
+            }
+          );
+        }
+
+        for (var i = 0; i < waypointLocations.length; i++) {
+          var position = new google.maps.LatLng(waypointLocations[i].Latitude, waypointLocations[i].Longitude);
+          
+          new google.maps.Marker({
+            position: position,
+            map: map,
+            label: i.toString(),
+          });
+        }
+
+        for (var j = 0; j < waypointLocations.length - 1; j++) {
+          var origin = new google.maps.LatLng(waypointLocations[j].Latitude, waypointLocations[j].Longitude);
+          var destination = new google.maps.LatLng(waypointLocations[j + 1].Latitude, waypointLocations[j + 1].Longitude);
+          calculateAndDisplayRoute(origin, destination, map);
+        }
+
+        showMap();
+      } catch (error) {
+        console.error("An error occurred while initializing the map:", error);
+        alert("Failed to initialize the map. Please try again later.");
+      }
+    }
+  </script>
+</head>
+<body onload="initMap()">
+  <div id="loading">Loading map...</div>
+  <div id="map" aria-label="Interactive map displaying routes"></div>
+</body>
+</html>
